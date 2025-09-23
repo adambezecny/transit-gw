@@ -77,7 +77,7 @@ export class TransitGwStack extends cdk.Stack {
      const tgwAttachment1 = new ec2.CfnTransitGatewayAttachment(this, 'TGWAttachment1', {
          transitGatewayId: transitGateway.ref,
          vpcId: vpc1.vpcId,
-         subnetIds: [privateSubnet1.subnetId, privateSubnet2.subnetId],
+         subnetIds: [privateSubnet1.subnetId, privateSubnet2.subnetId], //connect subnets in all AZs you want to attach via transit gateway!
      });
      cdk.Tags.of(tgwAttachment1).add('Name', 'tw-gw-attach-vpc-spoke-01');
 
@@ -96,5 +96,33 @@ export class TransitGwStack extends cdk.Stack {
         subnetIds: [privateSubnet5.subnetId, privateSubnet6.subnetId],
     });
     cdk.Tags.of(tgwAttachment3).add('Name', 'tw-gw-attach-vpc-hub-01');
-  }
-}
+
+    // route table entries for VPC1 subnets -> transit gateway
+    [privateSubnet1, privateSubnet2].forEach((subnet, index) => {
+        new ec2.CfnRoute(this, `RouteFromVpc1ToTransitGW_${index}`, {
+            routeTableId: subnet.routeTable.routeTableId,
+            destinationCidrBlock: '10.0.0.0/8',
+            transitGatewayId: transitGateway.ref,
+        });
+    });
+
+    // route table entries for VPC2 subnets -> transit gateway
+    [privateSubnet3, privateSubnet4].forEach((subnet, index) => {
+        new ec2.CfnRoute(this, `RouteFromVpc2ToTransitGW_${index}`, {
+            routeTableId: subnet.routeTable.routeTableId,
+            destinationCidrBlock: '10.0.0.0/8',
+            transitGatewayId: transitGateway.ref,
+        });
+    });
+
+   // route table entries for VPC3 subnets -> transit gateway
+   [privateSubnet5, privateSubnet6].forEach((subnet, index) => {
+        new ec2.CfnRoute(this, `RouteFromVpc3ToTransitGW_${index}`, {
+            routeTableId: subnet.routeTable.routeTableId,
+            destinationCidrBlock: '10.0.0.0/8',
+            transitGatewayId: transitGateway.ref,
+        });
+    });
+
+  } // end of stack constructor
+} // end of stack class
