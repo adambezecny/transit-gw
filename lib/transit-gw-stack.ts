@@ -124,5 +124,38 @@ export class TransitGwStack extends cdk.Stack {
         });
     });
 
+   // create custom route tables for attachments that will be used instead of the default transit gateway route table
+   const transitGWRouteTableAttach1 = new ec2.CfnTransitGatewayRouteTable(this, 'transitGWRouteTableForAttach1', {
+       transitGatewayId: transitGateway.ref,
+   });
+   cdk.Tags.of(transitGWRouteTableAttach1).add('Name', 'tgw-route-table-attach-01');
+
+   const transitGWRouteTableAttach2 = new ec2.CfnTransitGatewayRouteTable(this, 'transitGWRouteTableForAttach2', {
+       transitGatewayId: transitGateway.ref,
+   });
+   cdk.Tags.of(transitGWRouteTableAttach2).add('Name', 'tgw-route-table-attach-02');
+
+   const transitGWRouteTableAttach3 = new ec2.CfnTransitGatewayRouteTable(this, 'transitGWRouteTableForAttach3', {
+       transitGatewayId: transitGateway.ref,
+   });
+   cdk.Tags.of(transitGWRouteTableAttach3).add('Name', 'tgw-route-table-attach-03');
+
+   // TODO Transit Gateway Attachment tgw-attach-0d9a3005e5b4046cd is already associated to a route table.
+   // route table to attachment association
+   //const transitGWRouteTableAttach1Assoc = new ec2.CfnTransitGatewayRouteTableAssociation(this, 'transitGWRouteTableAttach1Assoc', {
+   //    transitGatewayAttachmentId: tgwAttachment1.ref,
+   //    transitGatewayRouteTableId: transitGWRouteTableAttach1.ref,
+   //});
+   //cdk.Tags.of(transitGWRouteTableAttach1Assoc).add('Name', 'tgw-route-table-attach-01-assoc');
+
+  // routes
+  //const transitGWRouteTableAttach1Route1 = new ec2.CfnTransitGatewayRoute(this, `transitGWRouteTableAttach1Route1`, {
+  //    destinationCidrBlock: '10.2.0.0/16',
+  //    transitGatewayRouteTableId: transitGWRouteTableAttach2.ref,
+  //    transitGatewayAttachmentId: tgwAttachment2.ref,
+  //});
+  //cdk.Tags.of(transitGWRouteTableAttach1Route1).add('Name', 'tgw-route-for-attach-02-to-spoke-01');
+
+
   } // end of stack constructor
 } // end of stack class
