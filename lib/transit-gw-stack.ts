@@ -70,8 +70,28 @@ export class TransitGwStack extends cdk.Stack {
      cdk.Tags.of(privateSubnet6).add('Name', 'hub-01-priv-subnet-02');
 
      // Transit gateway
-     const transitGateway = new ec2.CfnTransitGateway(this, 'TransitGateway', {});
+     const transitGateway = new ec2.CfnTransitGateway(this, 'TransitGateway', {
+         defaultRouteTableAssociation: 'disable',
+         defaultRouteTablePropagation: 'disable',
+     });
      cdk.Tags.of(transitGateway).add('Name', 'tw-gw-01');
+
+      // create custom route tables for attachments that will be used instead of the default transit gateway route table
+      const transitGWRouteTableAttach1 = new ec2.CfnTransitGatewayRouteTable(this, 'transitGWRouteTableForAttach1', {
+          transitGatewayId: transitGateway.ref,
+      });
+      cdk.Tags.of(transitGWRouteTableAttach1).add('Name', 'tgw-route-table-attach-01');
+
+      const transitGWRouteTableAttach2 = new ec2.CfnTransitGatewayRouteTable(this, 'transitGWRouteTableForAttach2', {
+          transitGatewayId: transitGateway.ref,
+      });
+      cdk.Tags.of(transitGWRouteTableAttach2).add('Name', 'tgw-route-table-attach-02');
+
+      const transitGWRouteTableAttach3 = new ec2.CfnTransitGatewayRouteTable(this, 'transitGWRouteTableForAttach3', {
+          transitGatewayId: transitGateway.ref,
+      });
+      cdk.Tags.of(transitGWRouteTableAttach3).add('Name', 'tgw-route-table-attach-03');
+
 
      // Attach VPC1 to the Transit Gateway
      const tgwAttachment1 = new ec2.CfnTransitGatewayAttachment(this, 'TGWAttachment1', {
@@ -97,58 +117,47 @@ export class TransitGwStack extends cdk.Stack {
     });
     cdk.Tags.of(tgwAttachment3).add('Name', 'tw-gw-attach-vpc-hub-01');
 
-    // route table entries for VPC1 subnets -> transit gateway
-    [privateSubnet1, privateSubnet2].forEach((subnet, index) => {
-        new ec2.CfnRoute(this, `RouteFromVpc1ToTransitGW_${index}`, {
-            routeTableId: subnet.routeTable.routeTableId,
-            destinationCidrBlock: '10.0.0.0/8',
-            transitGatewayId: transitGateway.ref,
-        });
-    });
-
-    // route table entries for VPC2 subnets -> transit gateway
-    [privateSubnet3, privateSubnet4].forEach((subnet, index) => {
-        new ec2.CfnRoute(this, `RouteFromVpc2ToTransitGW_${index}`, {
-            routeTableId: subnet.routeTable.routeTableId,
-            destinationCidrBlock: '10.0.0.0/8',
-            transitGatewayId: transitGateway.ref,
-        });
-    });
-
-   // route table entries for VPC3 subnets -> transit gateway
-   [privateSubnet5, privateSubnet6].forEach((subnet, index) => {
-        new ec2.CfnRoute(this, `RouteFromVpc3ToTransitGW_${index}`, {
-            routeTableId: subnet.routeTable.routeTableId,
-            destinationCidrBlock: '10.0.0.0/8',
-            transitGatewayId: transitGateway.ref,
-        });
-    });
-
-   // create custom route tables for attachments that will be used instead of the default transit gateway route table
-   const transitGWRouteTableAttach1 = new ec2.CfnTransitGatewayRouteTable(this, 'transitGWRouteTableForAttach1', {
-       transitGatewayId: transitGateway.ref,
+   // tgw attachment route tables associations
+   const transitGWRouteTableAttach1Assoc = new ec2.CfnTransitGatewayRouteTableAssociation(this, 'transitGWRouteTableAttach1Assoc', {
+       transitGatewayAttachmentId: tgwAttachment1.ref,
+       transitGatewayRouteTableId: transitGWRouteTableAttach1.ref,
    });
-   cdk.Tags.of(transitGWRouteTableAttach1).add('Name', 'tgw-route-table-attach-01');
+   cdk.Tags.of(transitGWRouteTableAttach1Assoc).add('Name', 'tgw-route-table-attach-01-assoc');
 
-   const transitGWRouteTableAttach2 = new ec2.CfnTransitGatewayRouteTable(this, 'transitGWRouteTableForAttach2', {
-       transitGatewayId: transitGateway.ref,
-   });
-   cdk.Tags.of(transitGWRouteTableAttach2).add('Name', 'tgw-route-table-attach-02');
+  const transitGWRouteTableAttach2Assoc = new ec2.CfnTransitGatewayRouteTableAssociation(this, 'transitGWRouteTableAttach2Assoc', {
+      transitGatewayAttachmentId: tgwAttachment2.ref,
+      transitGatewayRouteTableId: transitGWRouteTableAttach2.ref,
+  });
+  cdk.Tags.of(transitGWRouteTableAttach2Assoc).add('Name', 'tgw-route-table-attach-02-assoc');
 
-   const transitGWRouteTableAttach3 = new ec2.CfnTransitGatewayRouteTable(this, 'transitGWRouteTableForAttach3', {
-       transitGatewayId: transitGateway.ref,
-   });
-   cdk.Tags.of(transitGWRouteTableAttach3).add('Name', 'tgw-route-table-attach-03');
+  const transitGWRouteTableAttach3Assoc = new ec2.CfnTransitGatewayRouteTableAssociation(this, 'transitGWRouteTableAttach3Assoc', {
+      transitGatewayAttachmentId: tgwAttachment3.ref,
+      transitGatewayRouteTableId: transitGWRouteTableAttach3.ref,
+  });
+  cdk.Tags.of(transitGWRouteTableAttach3Assoc).add('Name', 'tgw-route-table-attach-03-assoc');
 
-   // TODO Transit Gateway Attachment tgw-attach-0d9a3005e5b4046cd is already associated to a route table.
-   // route table to attachment association
-   //const transitGWRouteTableAttach1Assoc = new ec2.CfnTransitGatewayRouteTableAssociation(this, 'transitGWRouteTableAttach1Assoc', {
-   //    transitGatewayAttachmentId: tgwAttachment1.ref,
-   //    transitGatewayRouteTableId: transitGWRouteTableAttach1.ref,
-   //});
-   //cdk.Tags.of(transitGWRouteTableAttach1Assoc).add('Name', 'tgw-route-table-attach-01-assoc');
+  // tgw attachment route tables propagations
+  const transitGWRouteTableAttach1Propagation = new ec2.CfnTransitGatewayRouteTablePropagation(this, 'transitGWRouteTableAttach1Propagation', {
+      transitGatewayAttachmentId: tgwAttachment1.ref,
+      transitGatewayRouteTableId: transitGWRouteTableAttach1.ref,
+  });
+  cdk.Tags.of(transitGWRouteTableAttach1Propagation).add('Name', 'tgw-route-table-attach-01-propagation');
 
-  // routes
+  const transitGWRouteTableAttach2Propagation = new ec2.CfnTransitGatewayRouteTablePropagation(this, 'transitGWRouteTableAttach2Propagation', {
+      transitGatewayAttachmentId: tgwAttachment2.ref,
+      transitGatewayRouteTableId: transitGWRouteTableAttach2.ref,
+  });
+  cdk.Tags.of(transitGWRouteTableAttach2Propagation).add('Name', 'tgw-route-table-attach-02-propagation');
+
+  const transitGWRouteTableAttach3Propagation = new ec2.CfnTransitGatewayRouteTablePropagation(this, 'transitGWRouteTableAttach3Propagation', {
+      transitGatewayAttachmentId: tgwAttachment3.ref,
+      transitGatewayRouteTableId: transitGWRouteTableAttach3.ref,
+  });
+  cdk.Tags.of(transitGWRouteTableAttach3Propagation).add('Name', 'tgw-route-table-attach-03-propagation');
+
+  // with propagation in place automatically routes might be good enough with no need to add custom routes
+  //
+  // custom routes:
   //const transitGWRouteTableAttach1Route1 = new ec2.CfnTransitGatewayRoute(this, `transitGWRouteTableAttach1Route1`, {
   //    destinationCidrBlock: '10.2.0.0/16',
   //    transitGatewayRouteTableId: transitGWRouteTableAttach2.ref,
@@ -157,5 +166,32 @@ export class TransitGwStack extends cdk.Stack {
   //cdk.Tags.of(transitGWRouteTableAttach1Route1).add('Name', 'tgw-route-for-attach-02-to-spoke-01');
 
 
+
+   // route table entries for VPC1 subnets -> transit gateway
+   [privateSubnet1, privateSubnet2].forEach((subnet, index) => {
+       new ec2.CfnRoute(this, `RouteFromVpc1ToTransitGW_${index}`, {
+           routeTableId: subnet.routeTable.routeTableId,
+           destinationCidrBlock: '10.0.0.0/8',
+           transitGatewayId: transitGateway.ref,
+       });
+   });
+
+   // route table entries for VPC2 subnets -> transit gateway
+   [privateSubnet3, privateSubnet4].forEach((subnet, index) => {
+       new ec2.CfnRoute(this, `RouteFromVpc2ToTransitGW_${index}`, {
+           routeTableId: subnet.routeTable.routeTableId,
+           destinationCidrBlock: '10.0.0.0/8',
+           transitGatewayId: transitGateway.ref,
+       });
+   });
+
+  // route table entries for VPC3 subnets -> transit gateway
+  [privateSubnet5, privateSubnet6].forEach((subnet, index) => {
+       new ec2.CfnRoute(this, `RouteFromVpc3ToTransitGW_${index}`, {
+           routeTableId: subnet.routeTable.routeTableId,
+           destinationCidrBlock: '10.0.0.0/8',
+           transitGatewayId: transitGateway.ref,
+       });
+   });
   } // end of stack constructor
 } // end of stack class
