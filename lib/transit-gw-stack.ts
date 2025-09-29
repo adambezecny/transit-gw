@@ -1,6 +1,11 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as aws_apigateway from "aws-cdk-lib/aws-apigateway";
+import {
+    InterfaceVpcEndpoint,
+    InterfaceVpcEndpointAwsService,
+} from 'aws-cdk-lib/aws-ec2';
 
 export class TransitGwStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -155,6 +160,75 @@ export class TransitGwStack extends cdk.Stack {
   });
   cdk.Tags.of(transitGWRouteTableAttach3Propagation).add('Name', 'tgw-route-table-attach-03-propagation');
 
+  const simpleLambda = new cdk.aws_lambda.Function(this, 'SimpleLambda', {
+          runtime: cdk.aws_lambda.Runtime.NODEJS_22_X,
+          handler: 'index.handler',
+          code: cdk.aws_lambda.Code.fromInline(`
+            exports.handler = async function(event) {
+                return { statusCode: 200, body: "Hello from Lambda 2!!!! foo header is: " + event.headers['foo'] };
+            };
+          `),
+  });
+
+  const apiEndpoint = new InterfaceVpcEndpoint(this, "apiEndpoint", {
+      service: InterfaceVpcEndpointAwsService.APIGATEWAY,
+      vpc: vpc2, // IMPORTANT: we intend to call api below via this VPCE from VPC1 utilizing TGW!
+      privateDnsEnabled: false,
+      subnets: {
+          subnets: [privateSubnet3, privateSubnet4],
+      },
+      //securityGroups: [securityGroup443],
+  });
+  //apiEndpoint.addToPolicy(policy);
+  cdk.Tags.of(apiEndpoint).add("Name", "apiEndpoint");
+  
+
+      const api = new aws_apigateway.RestApi(this, "ApiGW-test-api", {
+          defaultMethodOptions: {
+              authorizationType: aws_apigateway.AuthorizationType.NONE,
+          },
+          restApiName: "privateapigwsample-test-api-tgw-stack",
+          deployOptions: {
+              stageName: "api",
+              //accessLogDestination: new aws_apigateway.LogGroupLogDestination(this.accessLogGroup),
+              //accessLogFormat: generateAccessLogFormat(),
+              loggingLevel: aws_apigateway.MethodLoggingLevel.ERROR,
+              metricsEnabled: true,
+              tracingEnabled: true,
+
+              methodOptions: {
+                  "/*/*": {},
+              },
+          },
+          endpointTypes: [aws_apigateway.EndpointType.PRIVATE],
+          policy: new cdk.aws_iam.PolicyDocument({
+              statements: [
+                  new cdk.aws_iam.PolicyStatement({
+                      actions: ["execute-api:Invoke"],
+                      resources: ["*"],
+                      effect: cdk.aws_iam.Effect.DENY,
+                      principals: [new cdk.aws_iam.AnyPrincipal()],
+                      conditions: {
+                          StringNotEquals: {
+                              "aws:sourceVpce": [
+                                  apiEndpoint.vpcEndpointId,
+                              ]
+                          },
+                      },
+                  }),
+                  new cdk.aws_iam.PolicyStatement({
+                      actions: ["execute-api:Invoke"],
+                      resources: [`*`],
+                      effect: cdk.aws_iam.Effect.ALLOW,
+                      principals: [new cdk.aws_iam.AnyPrincipal()],
+                  }),
+              ],
+          }),
+      });
+      const AR_test =  api.root.addResource("test");
+      AR_test.addMethod("GET", new aws_apigateway.LambdaIntegration(simpleLambda), {});
+
+
   // with propagation in place automatically routes might be good enough with no need to add custom routes
   //
   // custom routes:
@@ -165,9 +239,10 @@ export class TransitGwStack extends cdk.Stack {
   //});
   //cdk.Tags.of(transitGWRouteTableAttach1Route1).add('Name', 'tgw-route-for-attach-02-to-spoke-01');
 
-
+   //
    // creates routes in the second run, once tgw is ready. adding explicit dependency did not help :(
    // in a real project this would go into standalone CDK STACK!
+   //
 
   //  // route table entries for VPC1 subnets -> transit gateway
   //  [privateSubnet1, privateSubnet2].forEach((subnet, index) => {
