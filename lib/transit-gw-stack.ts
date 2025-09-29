@@ -212,6 +212,7 @@ export class TransitGwStack extends cdk.Stack {
                           StringNotEquals: {
                               "aws:sourceVpce": [
                                   apiEndpoint.vpcEndpointId,
+                                  "vpce-0af3c594c60e5bca8" // IMPORTANT: privateapigwsample-generic-vpce-outbound
                               ]
                           },
                       },
