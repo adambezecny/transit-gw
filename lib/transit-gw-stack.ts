@@ -166,32 +166,35 @@ export class TransitGwStack extends cdk.Stack {
   //cdk.Tags.of(transitGWRouteTableAttach1Route1).add('Name', 'tgw-route-for-attach-02-to-spoke-01');
 
 
+   // creates routes in the second run, once tgw is ready. adding explicit dependency did not help :(
+   // in a real project this would go into standalone CDK STACK!
 
-   // route table entries for VPC1 subnets -> transit gateway
-   [privateSubnet1, privateSubnet2].forEach((subnet, index) => {
-       new ec2.CfnRoute(this, `RouteFromVpc1ToTransitGW_${index}`, {
-           routeTableId: subnet.routeTable.routeTableId,
-           destinationCidrBlock: '10.0.0.0/8',
-           transitGatewayId: transitGateway.ref,
-       });
-   });
+  //  // route table entries for VPC1 subnets -> transit gateway
+  //  [privateSubnet1, privateSubnet2].forEach((subnet, index) => {
+  //      new ec2.CfnRoute(this, `RouteFromVpc1ToTransitGW_${index}`, {
+  //          routeTableId: subnet.routeTable.routeTableId,
+  //          destinationCidrBlock: '10.0.0.0/8',
+  //          transitGatewayId: transitGateway.ref,
+  //      });
+  //  });
+  //
+  //  // route table entries for VPC2 subnets -> transit gateway
+  //  [privateSubnet3, privateSubnet4].forEach((subnet, index) => {
+  //      new ec2.CfnRoute(this, `RouteFromVpc2ToTransitGW_${index}`, {
+  //          routeTableId: subnet.routeTable.routeTableId,
+  //          destinationCidrBlock: '10.0.0.0/8',
+  //          transitGatewayId: transitGateway.ref,
+  //      });
+  //  });
+  //
+  // // route table entries for VPC3 subnets -> transit gateway
+  // [privateSubnet5, privateSubnet6].forEach((subnet, index) => {
+  //      new ec2.CfnRoute(this, `RouteFromVpc3ToTransitGW_${index}`, {
+  //          routeTableId: subnet.routeTable.routeTableId,
+  //          destinationCidrBlock: '10.0.0.0/8',
+  //          transitGatewayId: transitGateway.ref,
+  //      });
+  //  });
 
-   // route table entries for VPC2 subnets -> transit gateway
-   [privateSubnet3, privateSubnet4].forEach((subnet, index) => {
-       new ec2.CfnRoute(this, `RouteFromVpc2ToTransitGW_${index}`, {
-           routeTableId: subnet.routeTable.routeTableId,
-           destinationCidrBlock: '10.0.0.0/8',
-           transitGatewayId: transitGateway.ref,
-       });
-   });
-
-  // route table entries for VPC3 subnets -> transit gateway
-  [privateSubnet5, privateSubnet6].forEach((subnet, index) => {
-       new ec2.CfnRoute(this, `RouteFromVpc3ToTransitGW_${index}`, {
-           routeTableId: subnet.routeTable.routeTableId,
-           destinationCidrBlock: '10.0.0.0/8',
-           transitGatewayId: transitGateway.ref,
-       });
-   });
   } // end of stack constructor
 } // end of stack class
