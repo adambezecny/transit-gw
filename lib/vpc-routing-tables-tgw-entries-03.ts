@@ -1,21 +1,20 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import {subnetId} from "aws-cdk-lib/aws-ec2/lib/util";
 
 export class VpcRoutingTablesTgwEntriesStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
         // VPC lookups
-        const vpc1 = ec2.Vpc.fromLookup(this, 'vpc1', {vpcId: cdk.Fn.importValue('exportVpc1Id')});
-        const vpc2 = ec2.Vpc.fromLookup(this, 'vpc2', {vpcId: cdk.Fn.importValue('exportVpc2Id')});
-        const vpc3 = ec2.Vpc.fromLookup(this, 'vpc3', {vpcId: cdk.Fn.importValue('exportVpc3Id')});
-        const privateSubnet1 = ec2.Subnet.fromSubnetId(this, 'subnet1', cdk.Fn.importValue('exportSubnet1Id'));
-        const privateSubnet2 = ec2.Subnet.fromSubnetId(this, 'subnet2', cdk.Fn.importValue('exportSubnet2Id'));
-        const privateSubnet3 = ec2.Subnet.fromSubnetId(this, 'subnet3', cdk.Fn.importValue('exportSubnet3Id'));
-        const privateSubnet4 = ec2.Subnet.fromSubnetId(this, 'subnet4', cdk.Fn.importValue('exportSubnet4Id'));
-        const privateSubnet5 = ec2.Subnet.fromSubnetId(this, 'subnet5', cdk.Fn.importValue('exportSubnet5Id'));
-        const privateSubnet6 = ec2.Subnet.fromSubnetId(this, 'subnet6', cdk.Fn.importValue('exportSubnet6Id'));
+        const routeTableIdSubnet1 = cdk.Fn.importValue('exportSubnet1RTId');
+        const routeTableIdSubnet2 = cdk.Fn.importValue('exportSubnet2RTId');
+        const routeTableIdSubnet3 = cdk.Fn.importValue('exportSubnet3RTId');
+        const routeTableIdSubnet4 = cdk.Fn.importValue('exportSubnet4RTId');
+        const routeTableIdSubnet5 = cdk.Fn.importValue('exportSubnet5RTId');
+        const routeTableIdSubnet6 = cdk.Fn.importValue('exportSubnet6RTId');
+
         const transitGatewayId = cdk.Fn.importValue('exportTransitGatewayId');
 
 
@@ -35,27 +34,27 @@ export class VpcRoutingTablesTgwEntriesStack extends cdk.Stack {
         //
 
          // route table entries for VPC1 subnets -> transit gateway
-         [privateSubnet1, privateSubnet2].forEach((subnet, index) => {
+         [routeTableIdSubnet1, routeTableIdSubnet2].forEach((subnetRTId, index) => {
              new ec2.CfnRoute(this, `RouteFromVpc1ToTransitGW_${index}`, {
-                 routeTableId: subnet.routeTable.routeTableId,
+                 routeTableId: subnetRTId,
                  destinationCidrBlock: '10.0.0.0/8',
                  transitGatewayId,
              });
          });
 
          // route table entries for VPC2 subnets -> transit gateway
-         [privateSubnet3, privateSubnet4].forEach((subnet, index) => {
+         [routeTableIdSubnet3, routeTableIdSubnet4].forEach((subnetRTId, index) => {
              new ec2.CfnRoute(this, `RouteFromVpc2ToTransitGW_${index}`, {
-                 routeTableId: subnet.routeTable.routeTableId,
+                 routeTableId: subnetRTId,
                  destinationCidrBlock: '10.0.0.0/8',
                  transitGatewayId,
              });
          });
 
         // route table entries for VPC3 subnets -> transit gateway
-        [privateSubnet5, privateSubnet6].forEach((subnet, index) => {
+        [routeTableIdSubnet5, routeTableIdSubnet6].forEach((subnetRTId, index) => {
              new ec2.CfnRoute(this, `RouteFromVpc3ToTransitGW_${index}`, {
-                 routeTableId: subnet.routeTable.routeTableId,
+                 routeTableId: subnetRTId,
                  destinationCidrBlock: '10.0.0.0/8',
                  transitGatewayId,
              });

@@ -20,11 +20,11 @@ new VpcStack(app, 'VpcStack', {
 
   /* Uncomment the next line if you know exactly what Account and Region you
    * want to deploy the stack to. */
-   env,
+   env: env2,
 
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
 
-new TransitGwStack(app, 'TransitGwStack', {env});
-new VpcRoutingTablesTgwEntriesStack(app, 'VpcRoutingTablesTgwEntriesStack', {env});
-new SimpleLambdaStack(app, 'SimpleLambdaStack', {env});
+new TransitGwStack(app, 'TransitGwStack', {env: env2});
+new VpcRoutingTablesTgwEntriesStack(app, 'VpcRoutingTablesTgwEntriesStack', {env: env2});
+new SimpleLambdaStack(app, 'SimpleLambdaStack', {env: env2});

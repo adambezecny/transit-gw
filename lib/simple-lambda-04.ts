@@ -12,15 +12,16 @@ export class SimpleLambdaStack extends cdk.Stack {
         super(scope, id, props);
 
         // VPC lookups
-        const vpc1 = ec2.Vpc.fromLookup(this, 'vpc1', {vpcId: cdk.Fn.importValue('exportVpc1Id')});
-        const vpc2 = ec2.Vpc.fromLookup(this, 'vpc2', {vpcId: cdk.Fn.importValue('exportVpc2Id')});
-        const vpc3 = ec2.Vpc.fromLookup(this, 'vpc3', {vpcId: cdk.Fn.importValue('exportVpc3Id')});
-        const privateSubnet1 = ec2.Subnet.fromSubnetId(this, 'subnet1', cdk.Fn.importValue('exportSubnet1Id'));
-        const privateSubnet2 = ec2.Subnet.fromSubnetId(this, 'subnet2', cdk.Fn.importValue('exportSubnet2Id'));
-        const privateSubnet3 = ec2.Subnet.fromSubnetId(this, 'subnet3', cdk.Fn.importValue('exportSubnet3Id'));
-        const privateSubnet4 = ec2.Subnet.fromSubnetId(this, 'subnet4', cdk.Fn.importValue('exportSubnet4Id'));
-        const privateSubnet5 = ec2.Subnet.fromSubnetId(this, 'subnet5', cdk.Fn.importValue('exportSubnet5Id'));
-        const privateSubnet6 = ec2.Subnet.fromSubnetId(this, 'subnet6', cdk.Fn.importValue('exportSubnet6Id'));
+        const availabilityZones=['eu-central-1a','eu-central-1b'];
+        const vpc1 = ec2.Vpc.fromVpcAttributes(this, 'vpc1', {availabilityZones, vpcCidrBlock: "10.1.0.0/16", vpcId: cdk.Fn.importValue('exportVpc1Id')});
+        const vpc2 = ec2.Vpc.fromVpcAttributes(this, 'vpc2', {availabilityZones, vpcCidrBlock: "10.2.0.0/16", vpcId: cdk.Fn.importValue('exportVpc2Id')});
+        const vpc3 = ec2.Vpc.fromVpcAttributes(this, 'vpc3', {availabilityZones, vpcCidrBlock: "10.3.0.0/16", vpcId: cdk.Fn.importValue('exportVpc3Id')});
+        const privateSubnet1 = ec2.Subnet.fromSubnetAttributes(this, 'subnet1', {subnetId: cdk.Fn.importValue('exportSubnet1Id')});
+        const privateSubnet2 = ec2.Subnet.fromSubnetAttributes(this, 'subnet2', {subnetId: cdk.Fn.importValue('exportSubnet2Id')});
+        const privateSubnet3 = ec2.Subnet.fromSubnetAttributes(this, 'subnet3', {subnetId: cdk.Fn.importValue('exportSubnet3Id')});
+        const privateSubnet4 = ec2.Subnet.fromSubnetAttributes(this, 'subnet4', {subnetId: cdk.Fn.importValue('exportSubnet4Id')});
+        const privateSubnet5 = ec2.Subnet.fromSubnetAttributes(this, 'subnet5', {subnetId: cdk.Fn.importValue('exportSubnet5Id')});
+        const privateSubnet6 = ec2.Subnet.fromSubnetAttributes(this, 'subnet6', {subnetId: cdk.Fn.importValue('exportSubnet6Id')});
 
         const simpleLambda = new cdk.aws_lambda.Function(this, 'SimpleLambda', {
             runtime: cdk.aws_lambda.Runtime.NODEJS_22_X,

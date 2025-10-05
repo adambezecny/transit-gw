@@ -114,5 +114,35 @@ export class VpcStack extends cdk.Stack {
             exportName: "exportSubnet6Id",
         });
 
+        new cdk.CfnOutput(this, 'subnet1-rt-id', {
+            value: privateSubnet1.routeTable.routeTableId,
+            exportName: "exportSubnet1RTId",
+        });
+
+        new cdk.CfnOutput(this, 'subnet2-rt-id', {
+            value: privateSubnet2.routeTable.routeTableId,
+            exportName: "exportSubnet2RTId",
+        });
+
+        new cdk.CfnOutput(this, 'subnet3-rt-id', {
+            value: privateSubnet3.routeTable.routeTableId,
+            exportName: "exportSubnet3RTId",
+        });
+
+        new cdk.CfnOutput(this, 'subnet4-rt-id', {
+            value: privateSubnet4.routeTable.routeTableId,
+            exportName: "exportSubnet4RTId",
+        });
+
+        new cdk.CfnOutput(this, 'subnet5-rt-id', {
+            value: privateSubnet5.routeTable.routeTableId,
+            exportName: "exportSubnet5RTId",
+        });
+
+        new cdk.CfnOutput(this, 'subnet6-rt-id', {
+            value: privateSubnet6.routeTable.routeTableId,
+            exportName: "exportSubnet6RTId",
+        });
+
     } // end of stack constructor
 } // end of stack class

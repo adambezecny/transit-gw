@@ -7,9 +7,10 @@ export class TransitGwStack extends cdk.Stack {
     super(scope, id, props);
 
     // VPC lookups
-    const vpc1 = ec2.Vpc.fromLookup(this, 'vpc1', {vpcId: cdk.Fn.importValue('exportVpc1Id')});
-    const vpc2 = ec2.Vpc.fromLookup(this, 'vpc2', {vpcId: cdk.Fn.importValue('exportVpc2Id')});
-    const vpc3 = ec2.Vpc.fromLookup(this, 'vpc3', {vpcId: cdk.Fn.importValue('exportVpc3Id')});
+    const availabilityZones=['eu-central-1a','eu-central-1b'];
+    const vpc1 = ec2.Vpc.fromVpcAttributes(this, 'vpc1', {availabilityZones, vpcId: cdk.Fn.importValue('exportVpc1Id')});
+    const vpc2 = ec2.Vpc.fromVpcAttributes(this, 'vpc2', {availabilityZones, vpcId: cdk.Fn.importValue('exportVpc2Id')});
+    const vpc3 = ec2.Vpc.fromVpcAttributes(this, 'vpc3', {availabilityZones, vpcId: cdk.Fn.importValue('exportVpc3Id')});
     const privateSubnet1 = ec2.Subnet.fromSubnetId(this, 'subnet1', cdk.Fn.importValue('exportSubnet1Id'));
     const privateSubnet2 = ec2.Subnet.fromSubnetId(this, 'subnet2', cdk.Fn.importValue('exportSubnet2Id'));
     const privateSubnet3 = ec2.Subnet.fromSubnetId(this, 'subnet3', cdk.Fn.importValue('exportSubnet3Id'));
